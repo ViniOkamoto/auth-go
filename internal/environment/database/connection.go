@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var db *gorm.DB
+var DB *gorm.DB
 
 func InitDBConnection() {
 	var err error
@@ -25,10 +25,11 @@ func InitDBConnection() {
 		log.Fatal(err)
 	}
 
-	db = database
+	DB = database
 
-	db.AutoMigrate(retrieveAll()...)
+	DB.AutoMigrate(retrieveAll()...)
 
+	RunSeed(DB)
 	// db.Migrator().DropTable(retrieveAll()...)
 
 }
@@ -40,7 +41,7 @@ func retrieveAll() []interface{} {
 	}
 }
 
-func Run(db *gorm.DB) error {
+func RunSeed(db *gorm.DB) error {
 	for _, seed := range seeds.All() {
 		err := seed.Run(db)
 		if err != nil {
