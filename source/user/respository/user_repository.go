@@ -7,10 +7,11 @@ import (
 
 type UserRepository interface {
 	FindAll() ([]models.User, error)
-	Create(request models.UserRequest) (models.User, error)
-	FindById(id uint) (models.User, error)
-	Update(id uint, request models.UserRequest) (models.User, error)
-	Delete(id uint) error
+	Create(request models.UserCreateRequest) (models.User, error)
+	FindById(id uint) (*models.User, error)
+	FindByEmail(email string) (*models.User, error)
+	Update(user models.User, request models.UserUpdateRequest) (models.User, error)
+	Delete(user models.User) error
 }
 
 type UserRepositoryImpl struct {
@@ -24,14 +25,43 @@ func UserRepositoryFactory(db *gorm.DB) UserRepository {
 func (r *UserRepositoryImpl) FindAll() ([]models.User, error) {
 	var users []models.User
 	err := r.db.Find(&users).Error
+
 	return users, err
 }
 
-func (r *UserRepositoryImpl) Create(request models.UserRequest) (models.User, error) {
+func (r *UserRepositoryImpl) FindById(id uint) (*models.User, error) {
+	var user models.User
+	err := r.db.First(&user, id).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (r *UserRepositoryImpl) FindByEmail(email string) (*models.User, error) {
+	var user *models.User
+	err := r.db.Where("email = ?", email).First(&user).Error
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return user, err
+
+}
+
+func (r *UserRepositoryImpl) Create(request models.UserCreateRequest) (models.User, error) {
 	user := models.User{
 		FirstName: request.FirstName,
 		LastName:  request.LastName,
-		Username:  request.Username,
 		Email:     request.Email,
 		Password:  request.Password,
 	}
@@ -39,34 +69,17 @@ func (r *UserRepositoryImpl) Create(request models.UserRequest) (models.User, er
 	return user, err
 }
 
-func (r *UserRepositoryImpl) FindById(id uint) (models.User, error) {
-	var user models.User
-	err := r.db.First(&user, id).Error
-	return user, err
-}
-
-func (r *UserRepositoryImpl) Update(id uint, request models.UserRequest) (models.User, error) {
-	user, err := r.FindById(id)
-	if err != nil {
-		return user, err
-	}
+func (r *UserRepositoryImpl) Update(user models.User, request models.UserUpdateRequest) (models.User, error) {
 
 	user.FirstName = request.FirstName
 	user.LastName = request.LastName
-	user.Username = request.Username
 	user.Email = request.Email
-	user.Password = request.Password
 
-	err = r.db.Save(&user).Error
+	err := r.db.Save(&user).Error
 	return user, err
 }
 
-func (r *UserRepositoryImpl) Delete(id uint) error {
-	user, err := r.FindById(id)
-	if err != nil {
-		return err
-	}
-
-	err = r.db.Delete(&user).Error
+func (r *UserRepositoryImpl) Delete(user models.User) error {
+	err := r.db.Delete(&user).Error
 	return err
 }

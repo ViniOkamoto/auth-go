@@ -2,33 +2,49 @@ package models
 
 import (
 	"gorm.io/gorm"
+
+	"github.com/google/uuid"
 )
 
 type (
 	User struct {
 		gorm.Model
+		ID        string `gorm:"type:uuid;primary_key;"`
 		FirstName string
 		LastName  string
-		Username  string
 		Password  string
 		Email     string `gorm:"unique"`
-		RoleID    uint   `gorm:"not null;default:1  " `
+		RoleID    uint   `gorm:"not null;default:1"`
+
+		Role Role `gorm:"foreignKey:RoleID"`
 	}
 
-	UserRequest struct {
-		FirstName       string `json:"first_name"`
-		LastName        string `json:"last_name"`
-		Username        string `json:"username"`
-		Password        string `json:"password"`
-		ConfirmPassword string `json:"confirm_password"`
-		Email           string `json:"email"`
-		RoleID          uint   `json:"role_id"`
+	UserCreateRequest struct {
+		FirstName       string `json:"firstName" validate:"required"`
+		LastName        string `json:"lastName" validate:"required"`
+		Password        string `json:"password" validate:"required"`
+		ConfirmPassword string `json:"confirmPassword" validate:"required,eqfield=Password"`
+		Email           string `json:"email" validate:"required,email"`
+		RoleID          uint   `json:"roleId" validate:"required"`
+	}
+
+	UserUpdateRequest struct {
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+		Email     string `json:"email"`
+		RoleID    uint   `json:"roleId"`
 	}
 
 	UserResponse struct {
-		ID       uint   `json:"id"`
-		Username string `json:"username"`
-		Email    string `json:"email"`
-		Role     string `json:"role"`
+		ID        string `json:"id"`
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+		Email     string `json:"email"`
+		Role      Role   `json:"role"`
 	}
 )
+
+func (user *User) BeforeCreate(tx *gorm.DB) (err error) {
+	user.ID = uuid.New().String()
+	return
+}
