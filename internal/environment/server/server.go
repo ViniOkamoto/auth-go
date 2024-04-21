@@ -4,10 +4,11 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/viniokamoto/go-store/source/authentication/middlewares"
+	"github.com/viniokamoto/go-store/internal/environment/server/api/middlewares"
+	auth "github.com/viniokamoto/go-store/source/authentication/middlewares"
 )
 
-var AuthMiddleware = middlewares.AuthMiddleware
+var AuthMiddleware = auth.AuthMiddleware
 
 type Server struct {
 	Engine  *gin.Engine
@@ -74,4 +75,5 @@ func (s *Server) Start(port int) {
 
 func (s *Server) bindCommonMiddlewares() {
 	s.Engine.Use(gin.Logger())
+	s.Engine.Use(gin.CustomRecovery(middlewares.ExceptionMiddleware))
 }

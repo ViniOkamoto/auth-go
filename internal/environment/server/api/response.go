@@ -1,20 +1,21 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/viniokamoto/go-store/internal/environment/logging"
+	internal "github.com/viniokamoto/go-store/internal/exception"
 	"github.com/viniokamoto/go-store/source/utils"
 )
 
 type ApiError struct {
-	Message string `json:"message"`
-	Path    string `json:"path"`
-	Code    int    `json:"code"`
-	Detail  string `json:"detail"`
+	Message string          `json:"message"`
+	Path    string          `json:"path"`
+	Code    int             `json:"code"`
+	Detail  json.RawMessage `json:"detail"`
 }
 
 type ApiResponse struct {
@@ -38,29 +39,31 @@ func NewError(message, path string, statusCode int) *ApiError {
 	return &result
 }
 
-func NewErrorCode(message, path string, err error) *ApiError {
-	result := ApiError{}
-	result.Message = message
-	result.Path = path
-
-	code, codeErr := strconv.Atoi(fmt.Sprint(err))
-
-	if codeErr != nil {
-		code = 400
-	}
-
-	result.Code = code
-	result.Detail = err.Error()
-	return &result
-}
-
-func AbortBadRequest(c *gin.Context, err error) {
-	logging.Error(fmt.Sprintf("%s: %s", c.Request.RequestURI, err))
+func HandleError(c *gin.Context, exception internal.Exception) {
 
 	resp := ApiResponse{}
 
-	resp.Error = NewErrorCode("Bad Request", c.Request.RequestURI, err)
+	resp.Error = NewError(exception.Message, c.Request.RequestURI, exception.Code)
 
+	c.JSON(http.StatusBadRequest, resp)
+	c.Abort()
+}
+
+func AbortBadRequest(c *gin.Context, err error, details ...json.RawMessage) {
+
+	var detail json.RawMessage
+	if len(details) > 0 {
+		detail = details[0]
+	}
+
+	resp := ApiResponse{
+		Error: &ApiError{
+			Message: err.Error(),
+			Code:    400,
+			Path:    c.Request.RequestURI,
+			Detail:  detail,
+		},
+	}
 	c.JSON(http.StatusBadRequest, resp)
 	c.Abort()
 }
