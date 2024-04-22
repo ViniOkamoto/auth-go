@@ -7,8 +7,11 @@ type (
 	}
 
 	AuthenticationResponse struct {
-		AccessToken  string `json:"accessToken"`
-		RefreshToken string `json:"refreshToken"`
-		ExpiresIn    int    `json:"expiresIn"`
+		AccessToken string `json:"accessToken"`
+		ExpiresIn   int    `json:"expiresIn"`
+	}
+
+	RefreshRequest struct {
+		RefreshToken string `json:"refreshToken" validate:"required"`
 	}
 )

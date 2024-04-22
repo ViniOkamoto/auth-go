@@ -1,11 +1,13 @@
 package jwt
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/viniokamoto/go-store/internal/environment"
+	"github.com/viniokamoto/go-store/internal/environment/logging"
 )
 
 var Instance *JWT
@@ -14,14 +16,8 @@ type JWT struct {
 	key []byte
 }
 
-type TokenClaims struct {
-	RoleID uint `json:"roleId"`
-	jwt.RegisteredClaims
-}
-
 type JWTInterface interface {
 	GenerateAccessToken(userId string, roleId uint) (string, int, error)
-	GenerateRefreshToken() (string, error)
 	ValidateToken(token string) (TokenClaims, error)
 }
 
@@ -33,6 +29,9 @@ func Init() {
 }
 
 func (j *JWT) GenerateAccessToken(userId string, roleId uint) (string, int, error) {
+	logging.Info("Generating access token for user: " + userId)
+	logging.Info(fmt.Sprint("RoleID: ", roleId))
+
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, TokenClaims{
 		RoleID: roleId,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -52,20 +51,6 @@ func (j *JWT) GenerateAccessToken(userId string, roleId uint) (string, int, erro
 	expiresIn := int(time.Now().Add(time.Hour * 4).Unix())
 
 	return tokenString, expiresIn, nil
-}
-
-func (j *JWT) GenerateRefreshToken() (string, error) {
-	refreshToken := jwt.New(jwt.SigningMethodHS256)
-	rtClaims := refreshToken.Claims.(jwt.MapClaims)
-	rtClaims["exp"] = time.Now().Add(time.Hour * 24).Unix()
-
-	tokenString, err := refreshToken.SignedString(j.key)
-
-	if err != nil {
-		return "", err
-	}
-
-	return tokenString, nil
 }
 
 func (j *JWT) parseToken(tokenString string) (*jwt.Token, error) {
@@ -89,17 +74,5 @@ func (j *JWT) ValidateToken(tokenString string) (TokenClaims, error) {
 		return claims, nil
 	} else {
 		return TokenClaims{}, err
-	}
-}
-
-func (j *JWT) ValidateRefreshToken(tokenString string) (map[string]interface{}, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (any, error) {
-		return j.key, nil
-	})
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		return claims, nil
-	} else {
-		return nil, err
 	}
 }

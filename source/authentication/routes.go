@@ -38,5 +38,4 @@ func Register() server.ApiRoute {
 			handler.Register(c)
 		},
 	}
-
 }

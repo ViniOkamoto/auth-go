@@ -9,6 +9,8 @@ type Api interface {
 type ApiRoute struct {
 	MethodType  MethodType
 	IsAnonymous bool
+	IsAdmin     bool
+	IsStore     bool
 	Path        string
 	Handler     gin.HandlerFunc
 }

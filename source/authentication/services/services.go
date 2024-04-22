@@ -6,7 +6,7 @@ import (
 	"github.com/viniokamoto/go-store/source/authentication/domain/models"
 	"github.com/viniokamoto/go-store/source/authentication/jwt"
 	userModels "github.com/viniokamoto/go-store/source/user/domain/models"
-	repository "github.com/viniokamoto/go-store/source/user/repository"
+	userRepository "github.com/viniokamoto/go-store/source/user/repository"
 	"github.com/viniokamoto/go-store/source/user/services"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -17,21 +17,21 @@ type AuthServiceInterface interface {
 }
 
 type AuthService struct {
-	respository repository.UserRepository
-	userService services.UserServices
-	jwt         jwt.JWTInterface
+	userRepository userRepository.UserRepository
+	userService    services.UserServices
+	jwt            jwt.JWTInterface
 }
 
-func AuthServiceFactory(userRepository repository.UserRepository, userService services.UserServices) AuthServiceInterface {
+func AuthServiceFactory(userRepository userRepository.UserRepository, userService services.UserServices) AuthServiceInterface {
 	jwt := jwt.Instance
-	return &AuthService{respository: userRepository, userService: userService, jwt: jwt}
+	return &AuthService{userRepository: userRepository, userService: userService, jwt: jwt}
 }
 
 func (service *AuthService) Login(request models.AuthenticationRequest) (*models.AuthenticationResponse, *internal.Exception) {
 	email := request.Email
 	password := request.Password
 
-	user, err := service.respository.FindByEmail(email)
+	user, err := service.userRepository.FindByEmail(email)
 
 	if err != nil {
 		return nil, internal.DBException()
@@ -51,16 +51,9 @@ func (service *AuthService) Login(request models.AuthenticationRequest) (*models
 		return nil, internal.ServerException()
 	}
 
-	refreshToken, err := service.jwt.GenerateRefreshToken()
-
-	if err != nil {
-		return nil, internal.ServerException()
-	}
-
 	return &models.AuthenticationResponse{
-			AccessToken:  token,
-			RefreshToken: refreshToken,
-			ExpiresIn:    expiresIn,
+			AccessToken: token,
+			ExpiresIn:   expiresIn,
 		},
 		nil
 

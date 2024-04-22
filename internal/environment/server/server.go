@@ -10,6 +10,10 @@ import (
 
 var AuthMiddleware = auth.AuthMiddleware
 
+var StoreMiddleware = auth.StoreMiddleware
+
+var AdminMiddleware = auth.AdminMiddleware
+
 type Server struct {
 	Engine  *gin.Engine
 	options Options
@@ -47,6 +51,15 @@ func (s *Server) AddRoutes(routes []ApiRoute) {
 
 func (s *Server) AddRoute(route ApiRoute) {
 	handlers := []gin.HandlerFunc{route.Handler}
+
+	// low priority to high priority
+	if route.IsAdmin {
+		handlers = append([]gin.HandlerFunc{AdminMiddleware}, handlers...)
+	}
+
+	if route.IsStore {
+		handlers = append([]gin.HandlerFunc{StoreMiddleware}, handlers...)
+	}
 
 	if !route.IsAnonymous {
 		handlers = append([]gin.HandlerFunc{AuthMiddleware}, handlers...)

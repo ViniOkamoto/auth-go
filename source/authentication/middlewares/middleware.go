@@ -42,3 +42,36 @@ func AuthMiddleware(ctx *gin.Context) {
 
 	ctx.Next()
 }
+
+func CustomerMiddleware(ctx *gin.Context) {
+	claims := api.GetClaims(ctx)
+
+	if claims.IsCustomer() {
+		ctx.Next()
+		return
+	}
+
+	api.AbortForbidden(ctx)
+}
+
+func AdminMiddleware(ctx *gin.Context) {
+	claims := api.GetClaims(ctx)
+
+	if claims.IsAdmin() {
+		ctx.Next()
+		return
+	}
+
+	api.AbortForbidden(ctx)
+}
+
+func StoreMiddleware(ctx *gin.Context) {
+	claims := api.GetClaims(ctx)
+
+	if claims.IsStore() {
+		ctx.Next()
+		return
+	}
+
+	api.AbortForbidden(ctx)
+}

@@ -17,9 +17,9 @@ func BindRoutes() []server.ApiRoute {
 
 func GetUsers() server.ApiRoute {
 	return server.ApiRoute{
-		Path:        "/user",
-		MethodType:  server.GET,
-		IsAnonymous: true,
+		Path:       "/user",
+		MethodType: server.GET,
+		IsAdmin:    true,
 		Handler: func(c *gin.Context) {
 			handler := handler.CreateUserHandler()
 			handler.GetUsers(c)

@@ -19,3 +19,10 @@ func InvalidPasswordException() *internal.Exception {
 		Message: "User does not exist or password is invalid",
 	}
 }
+
+func InvalidTokenException() *internal.Exception {
+	return &internal.Exception{
+		Code:    http.StatusUnauthorized,
+		Message: "Invalid token",
+	}
+}

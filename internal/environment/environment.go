@@ -15,6 +15,7 @@ type EnvironmentConfig struct {
 	DatabaseURL string
 	Port        int
 	JWTKey      string
+	x
 }
 
 func Init() error {

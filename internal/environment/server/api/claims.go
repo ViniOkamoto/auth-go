@@ -14,7 +14,13 @@ func SetClaims(ctx *gin.Context, claims jwt.TokenClaims) {
 }
 
 func GetClaims(ctx *gin.Context) jwt.TokenClaims {
-	return ctx.MustGet("claims").(jwt.TokenClaims)
+	claims, exists := ctx.Get("claims")
+
+	if exists {
+		return claims.(jwt.TokenClaims)
+	} else {
+		return jwt.TokenClaims{}
+	}
 }
 
 func UserId(ctx *gin.Context) string {
