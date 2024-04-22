@@ -12,3 +12,11 @@ type (
 		Name string `json:"name"`
 	}
 )
+
+type RoleType int
+
+const (
+	Admin    RoleType = 1
+	Store    RoleType = 2
+	Customer RoleType = 3
+)
