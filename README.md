@@ -17,20 +17,34 @@ go run cmd/main.go
 This will start the server at `http://localhost:8080`.
 
 ## Architecture
-The project follows a modular architecture with separate packages for different functionalities. The main packages include:
+The project adopts a modular architecture, facilitating scalability, maintainability, and future refactoring into microservices. This architectural approach emphasizes clear boundaries between components, enhancing extensibility and comprehension.
 
-- environment: Handles the loading of environment variables from .env file and provides a global Config object. See environment.go.
-- database: Manages the database connection. See connection.go.
-- server: Creates and starts the server. See server.go.
-- authentication: Handles user authentication using JWT. See jwt.
-- user: Manages user-related functionalities. See user.
+### Modular Structure
+The main packages encompass distinct functionalities:
 
-Each module will have its own sub-modules and will contain the following folders
-- handlers: Contains the API handlers for the module.
-- domain: Contains the data models and exceptions for the module.
-- repository: Contains the database operations for the module.
-- service: Contains the business logic for the module.
-- routes: Contains the API routes for the module.
+- environment: This package manages environment variables, leveraging a global Config object initialized from a .env file (see environment.go).
+- database: Responsible for handling database connections and interactions (see connection.go).
+- server: Initiates and launches the server, serving as the entry point for incoming requests (see server.go).
+- authentication: This package governs user authentication using JWT (JSON Web Tokens) for secure access control (see jwt).
+- user: Manages operations related to users, such as creation, modification, and retrieval.
+
+### Modular Components
+Each module is structured into sub-modules, featuring the following directories:
+
+- handlers: Hosts API handlers responsible for processing incoming requests and generating appropriate responses.
+- domain: Contains data models defining the structure of entities within the module, along with exception handling mechanisms.
+- repository: Houses database operations specific to the module, encapsulating CRUD (Create, Read, Update, Delete) functionalities.
+- service: Encapsulates the business logic pertaining to the module's operations, promoting separation of concerns and modularity.
+- routes: Defines API routes associated with the module, establishing endpoints for client-server communication.
+
+## Benefits of Modular Architecture
+- Scalability: Modular design facilitates the addition or removal of features/modules without significant impact on other parts of the system, enabling seamless scalability.
+- Maintainability: Clear module boundaries enhance code maintainability by isolating changes within specific components, minimizing the risk of unintended side effects.
+- Extensibility: Well-defined interfaces between modules enable easy extension of functionalities by plugging in new components or replacing existing ones.
+- Comprehension: Modular architecture promotes better understanding of system components and their interactions, simplifying troubleshooting, debugging, and onboarding of new developers.
+- Microservice Readiness: The modular structure lays the groundwork for future refactoring into microservices, as each module encapsulates a coherent set of functionalities with clear boundaries.
+
+By adhering to this modular architecture, the project ensures flexibility, maintainability, and readiness for future expansion or migration to a microservices-based architecture.
 
 ## Features
 - User Authentication: The project uses JWT for user authentication.
