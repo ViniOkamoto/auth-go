@@ -2,9 +2,9 @@ package middlewares
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
 	"github.com/viniokamoto/go-store/internal/environment/logging"
 	"github.com/viniokamoto/go-store/internal/environment/server/api"
+	"github.com/viniokamoto/go-store/source/authentication/jwt"
 )
 
 type AccessResult struct {
@@ -26,20 +26,19 @@ func AuthMiddleware(ctx *gin.Context) {
 		return
 	}
 
-	parser := jwt.Parser{}
+	jwt := jwt.Instance
 
-	// Note:
-	// This does not verify the token using the signing signature.
-	// This is safe as long as this request is forwarded from a gateway which handles the actual verificiation
-	token, _, err := parser.ParseUnverified(reqToken, jwt.MapClaims{})
+	claims, err := jwt.ValidateToken(reqToken)
 
 	if err != nil {
 		logging.Info("Error parsing token: " + err.Error())
+
+		api.RemoveClaims(ctx)
 		api.AbortUnauthorized(ctx)
 		return
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok {
-		api.SetClaims(ctx, claims)
-	}
+	api.SetClaims(ctx, claims)
+
+	ctx.Next()
 }

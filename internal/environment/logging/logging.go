@@ -11,10 +11,8 @@ const successColor string = "\033[32m"
 const colorReset string = "\033[0m"
 const warningColor string = "\033[33m"
 
-
 type Logger struct {
 }
-
 
 func Info(logEntry string) {
 

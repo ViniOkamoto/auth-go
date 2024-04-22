@@ -8,15 +8,14 @@ import (
 
 func BindRoutes() []server.ApiRoute {
 	return []server.ApiRoute{
-		GetUser(),
-		GetUserByID(),
-		CreateUser(),
-		UpdateUser(),
-		DeleteUser(),
+		GetUsers(),
+		GetProfile(),
+		UpdateProfile(),
+		DeleteProfile(),
 	}
 }
 
-func GetUser() server.ApiRoute {
+func GetUsers() server.ApiRoute {
 	return server.ApiRoute{
 		Path:        "/user",
 		MethodType:  server.GET,
@@ -28,51 +27,36 @@ func GetUser() server.ApiRoute {
 	}
 }
 
-func GetUserByID() server.ApiRoute {
+func GetProfile() server.ApiRoute {
 	return server.ApiRoute{
-		Path:        "/user/:id",
-		MethodType:  server.GET,
-		IsAnonymous: true,
+		Path:       "/profile",
+		MethodType: server.GET,
 		Handler: func(c *gin.Context) {
 			handler := handler.CreateUserHandler()
-			handler.GetUserByID(c)
+			handler.GetProfile(c)
 		},
 	}
 }
 
-func CreateUser() server.ApiRoute {
+func UpdateProfile() server.ApiRoute {
 	return server.ApiRoute{
-		Path:        "/user",
-		MethodType:  server.POST,
-		IsAnonymous: true,
+		Path:       "/profile",
+		MethodType: server.PUT,
 		Handler: func(c *gin.Context) {
 			handler := handler.CreateUserHandler()
-			handler.CreateUser(c)
-		},
-	}
-}
-
-func UpdateUser() server.ApiRoute {
-	return server.ApiRoute{
-		Path:        "/user/:id",
-		MethodType:  server.PUT,
-		IsAnonymous: true,
-		Handler: func(c *gin.Context) {
-			handler := handler.CreateUserHandler()
-			handler.UpdateUser(c)
+			handler.UpdateProfile(c)
 		},
 	}
 
 }
 
-func DeleteUser() server.ApiRoute {
+func DeleteProfile() server.ApiRoute {
 	return server.ApiRoute{
-		Path:        "/user/:id",
-		MethodType:  server.DELETE,
-		IsAnonymous: true,
+		Path:       "/profile",
+		MethodType: server.DELETE,
 		Handler: func(c *gin.Context) {
 			handler := handler.CreateUserHandler()
-			handler.DeleteUser(c)
+			handler.DeleteProfile(c)
 		},
 	}
 }

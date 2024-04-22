@@ -3,38 +3,40 @@ package authentication
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/viniokamoto/go-store/internal/environment/server"
+	"github.com/viniokamoto/go-store/source/authentication/handler"
 )
 
 func BindRoutes() []server.ApiRoute {
 	return []server.ApiRoute{
-		Authenticate(),
-		Logout(),
+		Login(),
+		Register(),
 	}
 }
 
-func Authenticate() server.ApiRoute {
+func Login() server.ApiRoute {
 	return server.ApiRoute{
-		Path:        "/authenticate",
+		Path:        "/login",
 		MethodType:  server.POST,
 		IsAnonymous: true,
 		Handler: func(c *gin.Context) {
-			c.JSON(200, gin.H{
-				"message": "Hello from authentication route",
-			})
+			handler := handler.CreateAuthenticationHandler()
+
+			handler.Login(c)
 		},
 	}
 
 }
 
-func Logout() server.ApiRoute {
+func Register() server.ApiRoute {
 	return server.ApiRoute{
-		Path:        "/logout",
+		Path:        "/register",
 		MethodType:  server.POST,
 		IsAnonymous: true,
 		Handler: func(c *gin.Context) {
-			c.JSON(200, gin.H{
-				"message": "Hello from logout route",
-			})
+			handler := handler.CreateAuthenticationHandler()
+
+			handler.Register(c)
 		},
 	}
+
 }

@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/viniokamoto/go-store/source/user/domain/models"
 	"gorm.io/gorm"
 )
@@ -8,7 +10,7 @@ import (
 type UserRepository interface {
 	FindAll() ([]models.User, error)
 	Create(request models.UserCreateRequest) (models.User, error)
-	FindById(id uint) (*models.User, error)
+	FindById(id string) (*models.User, error)
 	FindByEmail(email string) (*models.User, error)
 	Update(user models.User, request models.UserUpdateRequest) (models.User, error)
 	Delete(user models.User) error
@@ -29,9 +31,9 @@ func (r *UserRepositoryImpl) FindAll() ([]models.User, error) {
 	return users, err
 }
 
-func (r *UserRepositoryImpl) FindById(id uint) (*models.User, error) {
+func (r *UserRepositoryImpl) FindById(id string) (*models.User, error) {
 	var user models.User
-	err := r.db.First(&user, id).Error
+	err := r.db.Preload("Role").First(&user, id).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return nil, nil
@@ -59,6 +61,14 @@ func (r *UserRepositoryImpl) FindByEmail(email string) (*models.User, error) {
 }
 
 func (r *UserRepositoryImpl) Create(request models.UserCreateRequest) (models.User, error) {
+	var existingUser models.User
+	if err := r.db.Where("email = ?", request.Email).First(&existingUser).Error; err != gorm.ErrRecordNotFound {
+		if err != nil {
+			return models.User{}, err
+		}
+		return models.User{}, fmt.Errorf("invalidEmail")
+	}
+
 	user := models.User{
 		FirstName: request.FirstName,
 		LastName:  request.LastName,
@@ -66,6 +76,7 @@ func (r *UserRepositoryImpl) Create(request models.UserCreateRequest) (models.Us
 		Password:  request.Password,
 	}
 	err := r.db.Create(&user).Error
+
 	return user, err
 }
 

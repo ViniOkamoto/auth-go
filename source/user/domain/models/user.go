@@ -4,11 +4,12 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/google/uuid"
+	"github.com/viniokamoto/go-store/internal/utils/common"
 )
 
 type (
 	User struct {
-		gorm.Model
+		common.CommonColumns
 		ID        string `gorm:"type:uuid;primary_key;"`
 		FirstName string
 		LastName  string
@@ -17,6 +18,13 @@ type (
 		RoleID    uint   `gorm:"not null;default:1"`
 
 		Role Role `gorm:"foreignKey:RoleID"`
+	}
+
+	UserUpdateRequest struct {
+		FirstName string `json:"firstName"`
+		LastName  string `json:"lastName"`
+		Email     string `json:"email"`
+		RoleID    uint   `json:"roleId"`
 	}
 
 	UserCreateRequest struct {
@@ -28,19 +36,12 @@ type (
 		RoleID          uint   `json:"roleId" validate:"required"`
 	}
 
-	UserUpdateRequest struct {
-		FirstName string `json:"firstName"`
-		LastName  string `json:"lastName"`
-		Email     string `json:"email"`
-		RoleID    uint   `json:"roleId"`
-	}
-
 	UserResponse struct {
-		ID        string `json:"id"`
-		FirstName string `json:"firstName"`
-		LastName  string `json:"lastName"`
-		Email     string `json:"email"`
-		Role      Role   `json:"role"`
+		ID        string       `json:"id"`
+		FirstName string       `json:"firstName"`
+		LastName  string       `json:"lastName"`
+		Email     string       `json:"email"`
+		Role      RoleResponse `json:"role"`
 	}
 )
 

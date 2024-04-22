@@ -7,6 +7,7 @@ import (
 	"github.com/viniokamoto/go-store/internal/environment/server"
 	"github.com/viniokamoto/go-store/internal/environment/server/routes"
 	"github.com/viniokamoto/go-store/internal/utils/validator"
+	"github.com/viniokamoto/go-store/source/authentication/jwt"
 )
 
 func main() {
@@ -17,6 +18,8 @@ func main() {
 	if err != nil {
 		logging.FatalObject(err)
 	}
+
+	jwt.Init()
 
 	database.InitDBConnection()
 

@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/viniokamoto/go-store/internal/environment/logging"
 	internal "github.com/viniokamoto/go-store/internal/exception"
-	"github.com/viniokamoto/go-store/source/utils"
+	"github.com/viniokamoto/go-store/internal/utils"
 )
 
 type ApiError struct {
@@ -19,8 +19,9 @@ type ApiError struct {
 }
 
 type ApiResponse struct {
-	Data  interface{} `json:"data"`
-	Error *ApiError   `json:"error"`
+	Data    interface{} `json:"data"`
+	Message string      `json:"message"`
+	Error   *ApiError   `json:"error"`
 }
 
 func (r ApiResponse) ToString() string {
@@ -119,8 +120,15 @@ func AbortNotFound(c *gin.Context) {
 	c.Abort()
 }
 
-func OkResponse(c *gin.Context, data interface{}) {
-	resp := ApiResponse{Data: data}
+func OkResponse(c *gin.Context, data interface{}, message ...string) {
+	resp := ApiResponse{
+		Data: data,
+	}
+
+	if len(message) > 0 {
+		resp.Message = message[0]
+	}
+
 	c.JSON(http.StatusOK, resp)
 }
 

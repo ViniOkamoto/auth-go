@@ -14,6 +14,7 @@ var Config *EnvironmentConfig
 type EnvironmentConfig struct {
 	DatabaseURL string
 	Port        int
+	JWTKey      string
 }
 
 func Init() error {
@@ -21,44 +22,35 @@ func Init() error {
 	err := godotenv.Load(".env")
 
 	if err != nil {
-		log.Fatal(err)
-		return err
+		panic(err)
 	}
 
-	databaseURL, err := getVariable("DATABASE_URL")
+	databaseURL := getVariable("DATABASE_URL")
 
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
-	port, err := getVariable("PORT")
-
-	if err != nil {
-		log.Fatal(err)
-		return err
-	}
+	port := getVariable("PORT")
 	portInt, err := strconv.Atoi(*port)
-
 	if err != nil {
-		log.Fatal(err)
-		return err
+		panic(err)
 	}
+
+	jwtKey := getVariable("JWT_KEY")
 
 	Config = &EnvironmentConfig{
 		DatabaseURL: *databaseURL,
 		Port:        portInt,
+		JWTKey:      *jwtKey,
 	}
 
 	return nil
 }
 
-func getVariable(key string) (*string, error) {
+func getVariable(key string) *string {
 	value := os.Getenv(key)
 
 	if value == "" {
 		log.Fatalf("Missing %s environment variable", key)
-		return nil, errors.New("missing environment variable")
+		panic(errors.New("missing environment variable"))
 	}
 
-	return &value, nil
+	return &value
 }

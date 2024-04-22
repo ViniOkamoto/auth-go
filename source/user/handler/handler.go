@@ -1,22 +1,17 @@
 package handler
 
 import (
-	"errors"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/viniokamoto/go-store/internal/environment/server/api"
-	"github.com/viniokamoto/go-store/internal/utils/validator"
 	"github.com/viniokamoto/go-store/source/user/domain/models"
 	"github.com/viniokamoto/go-store/source/user/services"
 )
 
 type UserHandlerInterface interface {
 	GetUsers(c *gin.Context)
-	GetUserByID(c *gin.Context)
-	CreateUser(c *gin.Context)
-	UpdateUser(c *gin.Context)
-	DeleteUser(c *gin.Context)
+	GetProfile(c *gin.Context)
+	UpdateProfile(c *gin.Context)
+	DeleteProfile(c *gin.Context)
 }
 
 type UserHandler struct {
@@ -36,55 +31,25 @@ func (handler *UserHandler) GetUsers(c *gin.Context) {
 		return
 	}
 
-	api.OkResponse(c, users)
+	api.OkResponse(c, users, "Users found successfully")
 }
 
-func (handler *UserHandler) GetUserByID(c *gin.Context) {
-	id := c.Param("id")
+func (handler *UserHandler) GetProfile(c *gin.Context) {
+	id := api.UserId(c)
 
-	idUint, err := strconv.ParseUint(id, 10, 64)
-
-	if err != nil {
-		api.AbortBadRequest(c, errors.New("invalid id"), nil)
-		return
-	}
-
-	user, exception := handler.service.GetUserByID(uint(idUint))
+	user, exception := handler.service.GetUserByID(id)
 
 	if exception != nil {
 		api.HandleError(c, *exception)
 		return
 	}
 
-	api.OkResponse(c, user)
+	api.OkResponse(c, user, "User found successfully")
 
 }
 
-func (handler *UserHandler) CreateUser(c *gin.Context) {
-	var request models.UserCreateRequest
-	if err := c.ShouldBindJSON(&request); err != nil {
-		api.AbortBadRequest(c, err, nil)
-		return
-	}
-
-	validationErrors := validator.ValidateStruct(request)
-	if validationErrors != nil {
-		api.AbortBadRequest(c, errors.New("invalid request"), validationErrors)
-		return
-	}
-
-	exception := handler.service.CreateUser(request)
-	if exception != nil {
-		api.HandleError(c, *exception)
-		return
-	}
-
-	api.OkResponse(c, nil)
-
-}
-
-func (handler *UserHandler) UpdateUser(c *gin.Context) {
-	id := c.Param("id")
+func (handler *UserHandler) UpdateProfile(c *gin.Context) {
+	id := api.UserId(c)
 	var request models.UserUpdateRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -92,40 +57,25 @@ func (handler *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	idUint, err := strconv.ParseUint(id, 10, 64)
-
-	if err != nil {
-		api.AbortBadRequest(c, errors.New("invalid id"))
-		return
-	}
-
-	user, exception := handler.service.UpdateUser(uint(idUint), request)
+	user, exception := handler.service.UpdateUser(id, request)
 
 	if exception != nil {
 		api.HandleError(c, *exception)
 		return
 	}
 
-	api.OkResponse(c, user)
+	api.OkResponse(c, user, "User updated successfully")
 
 }
 
-func (handler *UserHandler) DeleteUser(c *gin.Context) {
-	id := c.Param("id")
-
-	idUint, err := strconv.ParseUint(id, 10, 64)
-
-	if err != nil {
-		api.AbortBadRequest(c, errors.New("invalid id"))
-		return
-	}
-
-	exception := handler.service.DeleteUser(uint(idUint))
+func (handler *UserHandler) DeleteProfile(c *gin.Context) {
+	id := api.UserId(c)
+	exception := handler.service.DeleteUser(id)
 
 	if exception != nil {
 		api.HandleError(c, *exception)
 		return
 	}
 
-	api.OkResponse(c, nil)
+	api.OkResponse(c, nil, "User deleted successfully")
 }

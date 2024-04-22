@@ -1,20 +1,19 @@
 package services
 
 import (
-	database "github.com/viniokamoto/go-store/internal/environment/database/exceptions"
 	internal "github.com/viniokamoto/go-store/internal/exception"
 	"github.com/viniokamoto/go-store/source/user/domain/exceptions"
 	"github.com/viniokamoto/go-store/source/user/domain/models"
-	repository "github.com/viniokamoto/go-store/source/user/respository"
+	"github.com/viniokamoto/go-store/source/user/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type UserServices interface {
 	GetUsers() (*[]models.UserResponse, *internal.Exception)
-	GetUserByID(id uint) (*models.UserResponse, *internal.Exception)
+	GetUserByID(id string) (*models.UserResponse, *internal.Exception)
 	CreateUser(request models.UserCreateRequest) *internal.Exception
-	UpdateUser(id uint, request models.UserUpdateRequest) (*models.UserResponse, *internal.Exception)
-	DeleteUser(id uint) *internal.Exception
+	UpdateUser(id string, request models.UserUpdateRequest) (*models.UserResponse, *internal.Exception)
+	DeleteUser(id string) *internal.Exception
 }
 
 type UserServicesImpl struct {
@@ -28,7 +27,7 @@ func UserServicesFactory(userRepository repository.UserRepository) UserServices 
 func (service *UserServicesImpl) GetUsers() (*[]models.UserResponse, *internal.Exception) {
 	users, err := service.userRepository.FindAll()
 	if err != nil {
-		return nil, database.DBException()
+		return nil, internal.DBException()
 	}
 
 	var usersResponse []models.UserResponse
@@ -39,14 +38,17 @@ func (service *UserServicesImpl) GetUsers() (*[]models.UserResponse, *internal.E
 			LastName:  user.LastName,
 
 			Email: user.Email,
-			Role:  user.Role,
+			Role: models.RoleResponse{
+				ID:   user.Role.ID,
+				Name: user.Role.Name,
+			},
 		})
 	}
 
 	return &usersResponse, nil
 }
 
-func (service *UserServicesImpl) GetUserByID(id uint) (*models.UserResponse, *internal.Exception) {
+func (service *UserServicesImpl) GetUserByID(id string) (*models.UserResponse, *internal.Exception) {
 	user, err := service.userRepository.FindById(id)
 	if err != nil {
 		return nil, exceptions.UserNotFoundException()
@@ -57,7 +59,10 @@ func (service *UserServicesImpl) GetUserByID(id uint) (*models.UserResponse, *in
 		LastName:  user.LastName,
 
 		Email: user.Email,
-		Role:  user.Role,
+		Role: models.RoleResponse{
+			ID:   user.Role.ID,
+			Name: user.Role.Name,
+		},
 	}, nil
 
 }
@@ -66,7 +71,8 @@ func (service *UserServicesImpl) CreateUser(request models.UserCreateRequest) *i
 	user, err := service.userRepository.FindByEmail(request.Email)
 
 	if err != nil {
-		return database.DBException()
+
+		return internal.DBException()
 	}
 
 	if user != nil {
@@ -80,13 +86,16 @@ func (service *UserServicesImpl) CreateUser(request models.UserCreateRequest) *i
 	_, err = service.userRepository.Create(request)
 
 	if err != nil {
-		return database.DBException()
+		if err.Error() == "invalidEmail" {
+			return exceptions.UserEmailAlreadyExistException()
+		}
+		return internal.DBException()
 	}
 
 	return nil
 }
 
-func (service *UserServicesImpl) UpdateUser(id uint, request models.UserUpdateRequest) (*models.UserResponse, *internal.Exception) {
+func (service *UserServicesImpl) UpdateUser(id string, request models.UserUpdateRequest) (*models.UserResponse, *internal.Exception) {
 
 	user, err := service.userRepository.FindById(id)
 
@@ -105,11 +114,14 @@ func (service *UserServicesImpl) UpdateUser(id uint, request models.UserUpdateRe
 		FirstName: userUpdate.FirstName,
 		LastName:  userUpdate.LastName,
 		Email:     userUpdate.Email,
-		Role:      userUpdate.Role,
+		Role: models.RoleResponse{
+			ID:   userUpdate.Role.ID,
+			Name: userUpdate.Role.Name,
+		},
 	}, nil
 }
 
-func (service *UserServicesImpl) DeleteUser(id uint) *internal.Exception {
+func (service *UserServicesImpl) DeleteUser(id string) *internal.Exception {
 	user, err := service.userRepository.FindById(id)
 
 	if user == nil {
@@ -123,7 +135,7 @@ func (service *UserServicesImpl) DeleteUser(id uint) *internal.Exception {
 	err = service.userRepository.Delete(*user)
 
 	if err != nil {
-		return database.DBException()
+		return internal.DBException()
 	}
 
 	return nil
